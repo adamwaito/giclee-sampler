@@ -1,6 +1,6 @@
 # Giclee Sampler — Plan
 
-Status: **Phase 1 in progress.** Everything is done locally except confirming CI on GitHub.
+Status: **Phase 1 complete.** Phase 2 is next. Repo: https://github.com/adamwaito/giclee-sampler
 
 Giclee is an open-source automatic multisampler (hardware over MIDI, hosted VST3/AU, and non-MIDI manual capture) with a companion sample-player plugin. It is built on JUCE 9 with a WebView UI, CMake, and targets macOS and Windows.
 
@@ -8,9 +8,9 @@ How to use this file: every phase has checkboxes. Tick them as work lands, and k
 
 ## Current state
 
-- Phase in progress: **Phase 1**. Every item is done locally except the GitHub Actions run.
-- Last session: 2026-10-25. Scaffold, both apps, bridge, frontends, tests and the CI workflow written. The macOS universal Release build, the 24 tests and the CI packaging script all pass locally. `git init` done; nothing committed yet.
-- Next step: initial commit, then push to GitHub (waiting on the user) and get CI green on macOS and Windows. After that, start Phase 2.
+- Phase in progress: none. **Phase 1 is complete**; Phase 2 hasn't started.
+- Last session: 2026-10-25. Phase 1 built, pushed to GitHub (public), and CI is green on macOS (universal), Windows (x64) and the frontend check.
+- Next step: start Phase 2 (data model, file IO, synthetic signals).
 - Not yet verified by eye:
   - The Sampler window's rendering. The app loads the embedded UI and RPC calls arrive (confirmed from the debug log), but the screenshot needs screen-recording permission.
   - The Player editor in a DAW.
@@ -257,7 +257,7 @@ Each phase ends with something that builds in CI and can be run or tested.
 - [x] Svelte/TS/Vite frontend; dev-server mode (Debug, `GICLEE_UI_DEV_URL`) plus embedded resources; mock backend for browser-only UI work
 - [x] Typed bridge: `app.ping` round-trip, `app.heartbeat` event, `/api/demo/peaks` binary endpoint drawn by `Waveform.svelte`; Player volume parameter through `WebSliderRelay`
 - [x] Catch2 tests: DSP level/peaks; bridge RPC router, event hub, resource router (24 tests)
-- [ ] GitHub Actions: macOS (universal) and Windows builds plus tests; build artifacts uploaded. Workflow written and the macOS steps checked locally; **not yet run on GitHub**
+- [x] GitHub Actions: macOS (universal) and Windows builds plus tests; build artifacts uploaded. First run green (run 40231296320, about 10 min on macOS and 7.5 min on Windows with a cold cache)
 - **Done when:** CI is green on both OSes, and both apps open and show a UI that talks to C++.
 
 ### Phase 2 — Data model, file IO, synthetic signals
