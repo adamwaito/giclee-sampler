@@ -1,0 +1,17 @@
+# Build output
+/build/
+/out/
+/dist/
+CMakeUserPresets.json
+
+# Dependency caches
+/.cache/
+ui/node_modules/
+ui/dist/
+
+# Editors and OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

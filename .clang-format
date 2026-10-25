@@ -1,0 +1,22 @@
+# Approximates the JUCE coding style used throughout Giclee's C++ code.
+# Not enforced in CI yet; use it for new code.
+BasedOnStyle: LLVM
+Language: Cpp
+Standard: c++20
+ColumnLimit: 0
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+BreakBeforeBraces: Allman
+SpaceBeforeParens: NonEmptyParentheses
+SpaceAfterLogicalNot: true
+PointerAlignment: Left
+AccessModifierOffset: -4
+NamespaceIndentation: Inner
+IndentPPDirectives: None
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortLambdasOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: Never
+AlignTrailingComments: true
+SortIncludes: CaseSensitive
+IncludeBlocks: Preserve

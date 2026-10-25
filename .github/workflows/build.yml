@@ -1,0 +1,118 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CPM_SOURCE_CACHE: ${{ github.workspace }}/.cache/CPM
+
+jobs:
+  frontend:
+    name: Frontend check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run check
+      - run: npm run build
+
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS (universal)
+            os: macos-15
+            preset: ci-macos
+          - name: Windows (x64)
+            os: windows-latest
+            preset: ci-windows
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+
+      - name: Cache CPM downloads
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CPM_SOURCE_CACHE }}
+          key: cpm-${{ runner.os }}-${{ hashFiles('cmake/GicleeDependencies.cmake', 'cmake/CPM.cmake') }}
+
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }} --parallel 4
+
+      - name: Test
+        run: ctest --preset ${{ matrix.preset }}
+
+      - name: Package (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          out=build/ci-macos/apps
+          sampler="$out/sampler/GicleeSampler_artefacts/Release/Giclee Sampler.app"
+          player="$out/player/GicleePlayer_artefacts/Release"
+
+          # Fail if anything isn't a universal binary.
+          for bin in "$sampler/Contents/MacOS/Giclee Sampler" \
+                     "$player/VST3/Giclee Player.vst3/Contents/MacOS/Giclee Player" \
+                     "$player/AU/Giclee Player.component/Contents/MacOS/Giclee Player"; do
+            archs=$(lipo -archs "$bin")
+            echo "$bin: $archs"
+            [[ "$archs" == *arm64* && "$archs" == *x86_64* ]]
+          done
+
+          stage=dist/Giclee-macOS
+          mkdir -p "$stage"
+          ditto "$sampler" "$stage/Giclee Sampler.app"
+          ditto "$player/VST3/Giclee Player.vst3" "$stage/Giclee Player.vst3"
+          ditto "$player/AU/Giclee Player.component" "$stage/Giclee Player.component"
+          ditto "$player/Standalone/Giclee Player.app" "$stage/Giclee Player.app"
+          # Zip with ditto so bundle symlinks and permissions survive the artifact upload.
+          ditto -c -k --keepParent "$stage" dist/Giclee-macOS.zip
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          out=build/ci-windows/apps
+          player="$out/player/GicleePlayer_artefacts/Release"
+          stage=dist/Giclee-Windows
+          mkdir -p "$stage"
+          cp "$out/sampler/GicleeSampler_artefacts/Release/Giclee Sampler.exe" "$stage/"
+          cp -R "$player/VST3/Giclee Player.vst3" "$stage/"
+          cp "$player/Standalone/Giclee Player.exe" "$stage/"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Giclee-${{ runner.os }}
+          path: |
+            dist/Giclee-macOS.zip
+            dist/Giclee-Windows
+          if-no-files-found: error

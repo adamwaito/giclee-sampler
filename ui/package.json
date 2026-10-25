@@ -1,0 +1,26 @@
+{
+  "name": "giclee-ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "GPL-3.0-or-later",
+  "scripts": {
+    "dev:sampler": "vite --mode sampler",
+    "dev:player": "vite --mode player",
+    "build:sampler": "vite build --mode sampler",
+    "build:player": "vite build --mode player",
+    "build": "npm run build:sampler && npm run build:player",
+    "check": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings"
+  },
+  "dependencies": {
+    "@juce-framework/webview": "1.0.0"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "@tsconfig/svelte": "5.0.8",
+    "svelte": "5.57.2",
+    "svelte-check": "4.7.6",
+    "typescript": "6.0.3",
+    "vite": "8.3.4"
+  }
+}
